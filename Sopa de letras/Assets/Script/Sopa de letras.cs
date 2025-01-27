@@ -6,8 +6,11 @@ public class Sopadeletras : MonoBehaviour
 {
     public int gridSize = 10; // Tamaño de la cuadrícula
     public List<string> words = new List<string> { "UNITY", "ANDROID", "GAME", "CODE", "FUN" }; // Lista de palabras
-    private char[,] grid;
     public TextMeshProUGUI gridText; // Referencia al objeto TextMeshPro
+    public GameObject cellPrefab; // Prefab de la celda
+    public Transform gridParent; // Panel que contiene la cuadrícula
+
+    private char[,] grid;
 
     void Start()
     {
@@ -22,6 +25,7 @@ public class Sopadeletras : MonoBehaviour
         grid = new char[gridSize, gridSize];
     }
 
+    // Lógica para colocar palabras
     void PlaceWords()
     {
         foreach (string word in words)
@@ -45,6 +49,7 @@ public class Sopadeletras : MonoBehaviour
         }
     }
 
+    // Lógica para rellenar espacios vacíos
     bool CanPlaceWord(string word, int x, int y, int directionX, int directionY)
     {
         for (int i = 0; i < word.Length; i++)
@@ -88,15 +93,15 @@ public class Sopadeletras : MonoBehaviour
 
     void DisplayGrid()
     {
-        string gridString = "";
         for (int y = 0; y < gridSize; y++)
         {
             for (int x = 0; x < gridSize; x++)
             {
-                gridString += grid[x, y] + " ";
+                // Instancia la celda y la asigna al gridParent
+                GameObject cell = Instantiate(cellPrefab, gridParent);
+                TextMeshProUGUI text = cell.GetComponent<TextMeshProUGUI>();
+                text.text = grid[x, y].ToString();
             }
-            gridString += "\n";
         }
-        gridText.text = gridString; // Asigna el texto al objeto TextMeshPro
     }
 }

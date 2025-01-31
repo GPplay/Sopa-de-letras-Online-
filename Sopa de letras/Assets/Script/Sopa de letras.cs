@@ -1,32 +1,46 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Sopadeletras : MonoBehaviour
 {
-    public int gridSize = 10; // Tamaño de la cuadrícula
-    public List<string> words = new List<string> { "UNITY", "ANDROID", "GAME", "CODE", "FUN" }; // Lista de palabras
-    public TextMeshProUGUI gridText; // Referencia al objeto TextMeshPro
+    public int gridSize = 10; // Tamaño fijo de la cuadrícula (10x10)
+    public List<string> words = new List<string>(); // Lista de palabras
     public GameObject cellPrefab; // Prefab de la celda
     public Transform gridParent; // Panel que contiene la cuadrícula
+    public CrearListaDePalabras lista;
 
     private char[,] grid;
 
+
     void Start()
     {
+        // Verificar si hay palabras asignadas
+        if (words.Count == 0)
+        {
+            Debug.LogError("No se han asignado palabras. Asegúrate de llamar a SetWords antes de Start.");
+            return;
+        }
+
         GenerateGrid();
         PlaceWords();
         FillEmptySpaces();
         DisplayGrid();
     }
 
-    void GenerateGrid()
+    // Método para recibir la lista de palabras
+    public void SetWords(List<string> newWords)
+    {
+        words = newWords;
+    }
+
+    public void GenerateGrid()
     {
         grid = new char[gridSize, gridSize];
     }
 
-    // Lógica para colocar palabras
-    void PlaceWords()
+    public void PlaceWords()
     {
         foreach (string word in words)
         {
@@ -49,8 +63,7 @@ public class Sopadeletras : MonoBehaviour
         }
     }
 
-    // Lógica para rellenar espacios vacíos
-    bool CanPlaceWord(string word, int x, int y, int directionX, int directionY)
+    public bool CanPlaceWord(string word, int x, int y, int directionX, int directionY)
     {
         for (int i = 0; i < word.Length; i++)
         {
@@ -66,7 +79,7 @@ public class Sopadeletras : MonoBehaviour
         return true;
     }
 
-    void PlaceWord(string word, int x, int y, int directionX, int directionY)
+    public void PlaceWord(string word, int x, int y, int directionX, int directionY)
     {
         for (int i = 0; i < word.Length; i++)
         {
@@ -77,7 +90,7 @@ public class Sopadeletras : MonoBehaviour
         }
     }
 
-    void FillEmptySpaces()
+    public void FillEmptySpaces()
     {
         for (int x = 0; x < gridSize; x++)
         {
@@ -91,16 +104,37 @@ public class Sopadeletras : MonoBehaviour
         }
     }
 
-    void DisplayGrid()
+    public void DisplayGrid()
     {
+        // Tamaño fijo de las celdas (ajusta este valor según sea necesario)
+        float cellSize = 100f;
+
+        // Ajustar el tamaño del Grid Layout Group
+        GridLayoutGroup gridLayout = gridParent.GetComponent<GridLayoutGroup>();
+        gridLayout.cellSize = new Vector2(cellSize, cellSize);
+
         for (int y = 0; y < gridSize; y++)
         {
             for (int x = 0; x < gridSize; x++)
             {
                 // Instancia la celda y la asigna al gridParent
                 GameObject cell = Instantiate(cellPrefab, gridParent);
-                TextMeshProUGUI text = cell.GetComponent<TextMeshProUGUI>();
+
+                // Asignar coordenadas a la celda
+                CellData cellData = cell.GetComponent<CellData>();
+                if (cellData == null)
+                {
+                    cellData = cell.AddComponent<CellData>();
+                }
+                cellData.SetCoordinates(x, y);
+
+                // Configurar el texto de la celda
+                TextMeshProUGUI text = cell.GetComponentInChildren<TextMeshProUGUI>();
                 text.text = grid[x, y].ToString();
+
+                // Ajustar el tamaño de la fuente para que quepa en la celda
+                text.fontSize = (int)(cellSize * 0.5f); // Ajusta este valor según sea necesario
+                text.alignment = TextAlignmentOptions.Center; // Centrar el texto
             }
         }
     }

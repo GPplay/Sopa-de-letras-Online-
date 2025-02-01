@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 3253486766781362365}
   - component: {fileID: 8024094365866955155}
   - component: {fileID: 7615422296831661483}
+  - component: {fileID: 860932060122213402}
   - component: {fileID: 2641785545190450939}
-  - component: {fileID: 6002165994645911166}
   m_Layer: 5
   m_Name: Cell
   m_TagString: Untagged
@@ -78,6 +78,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &860932060122213402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8089313737203718295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9be4255485d22c541a44b08263f4dd50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onCellSelected:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &2641785545190450939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,18 +137,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6002165994645911166
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8089313737203718295}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9be4255485d22c541a44b08263f4dd50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &8303219652349637961
 GameObject:
   m_ObjectHideFlags: 0

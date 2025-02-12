@@ -1,184 +1,158 @@
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+Ôªøusing UnityEngine;
 using TMPro;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class SopaDeLetrasGenerator : MonoBehaviour
 {
     public static SopaDeLetrasGenerator Instance;
-    public enum Language { Spanish, English }
-    public Language language = Language.Spanish; // Idioma por defecto: espaÒol
 
-    public int gridSize = 10; // TamaÒo de la cuadrÌcula (10x10 por defecto)
-    public GameObject cellPrefab; // Prefab de la casilla (debe tener un componente Text o TextMeshProUGUI)
-    public Transform gridParent; // Objeto padre en el Canvas donde se generar· la cuadrÌcula
+    [Header("Configuraci√≥n")]
+    public GameObject cellPrefab; // Prefab de la celda
+    public Transform gridParent;  // Contenedor del grid (debe ser cuadrado)
+    public List<string> palabras = new List<string>() {
+    "PAN", "CASA", "FLOR", "LUZ", "MESA", "SOL", "MAR", "CIELO", "TIERRA", "FUEGO",
+    "AGUA", "VIENTO", "ARBOL", "PERRO", "GATO", "LIBRO", "MANO", "PIE", "OJOS", "BOCA",
+    "NARIZ", "COCHE", "CALLE", "PLAZA", "CAMINO", "PUENTE", "BANCO", "PLATO", "VASO", "TENEDOR",
+    "CUCHARA", "LLAVE", "PUERTA", "VENTANA", "TECHO", "SUELO", "PISO", "SILLA", "MESA", "SOFA",
+    "CAMA", "ALMOHADA", "MANTEL", "TOALLA", "JABON", "PELO", "U√ëA", "PIEL", "HUESO", "SANGRE",
+    "CARNE", "HUESO", "HIELO", "NIEVE", "LLUVIA", "TRUENO", "RAYO", "NUBE", "ESTRELLA", "LUNA",
+    "PLANETA", "BOSQUE", "RIO", "LAGO", "MONTA√ëA", "VALLE", "PLAYA", "ARENA", "PIEDRA", "BARRO",
+    "METAL", "ORO", "PLATA", "BRONCE", "HIERRO", "CARBON", "MADERA", "PAPEL", "TELA", "HILO",
+    "AGUJA", "BOTON", "ZAPATO", "SOMBRERO", "GUANTE", "BUFANDA", "ABRIGO", "FALDA", "PANTALON", "CAMISA",
+    "VESTIDO", "CHAQUETA", "RELOJ", "CADENA", "ANILLO", "PULSERA", "COLLAR", "BOLSO", "MALETA", "MOCHILA"};
 
-    private char[,] grid; // Matriz que representa la sopa de letras
-    public List<string> words = new List<string>(); // Lista de palabras a incluir en la sopa de letras
+    private const int GRID_SIZE = 10; // Tama√±o fijo 10x10
+    private char[,] grid = new char[GRID_SIZE, GRID_SIZE];
+    public List<string> palabrasActuales = new List<string>();
 
-    private List<string> spanishWords = new List<string>
-    {
-        "MANZANA", "PLAYA", "CEREBRO", "PAN", "LADRILLO", "SILLA", "RELOJ", "NUBE", "FANTASMA", "UVA",
-        "MIEL", "CASA", "LIM”N", "DINERO", "PAPEL", "PERLA", "TEL…FONO", "PIZZA", "AVI”N", "PLANTA"
-    };
+    private void Awake() => Instance = this;
 
-    private List<string> englishWords = new List<string>
-    {
-        "APPLE", "BEACH", "BRAIN", "BREAD", "BRICK", "CHAIR", "CLOCK", "CLOUD", "GHOST", "GRAPE",
-        "HONEY", "HOUSE", "LEMON", "MONEY", "PAPER", "PEARL", "PHONE", "PIZZA", "PLANE", "PLANT"
-    };
-
-    private void Awake()
-    {
-        Instance = this;
-    }
     void Start()
     {
-        GenerateWords();
-        GenerateGrid();
-        PlaceWords();
-        FillEmptySpaces();
-        DisplayGrid();
+        ConfigurarTama√±oGridParent();
+        GenerarNuevoNivel();
     }
 
-    // Genera la lista de palabras aleatorias seg˙n el idioma seleccionado
-    private void GenerateWords()
+    // Ajusta el tama√±o del contenedor para que sea cuadrado
+    private void ConfigurarTama√±oGridParent()
     {
-        List<string> wordList = (language == Language.Spanish) ? spanishWords : englishWords;
-        int wordCount = 5; // N˙mero de palabras a incluir (puedes ajustarlo)
+        GridLayoutGroup gridLayout = gridParent.GetComponent<GridLayoutGroup>();
+        float tama√±oCelda = gridLayout.cellSize.x;
+        float spacing = gridLayout.spacing.x;
+        float tama√±oTotal = (tama√±oCelda + spacing) * GRID_SIZE;
+        gridParent.GetComponent<RectTransform>().sizeDelta = new Vector2(tama√±oTotal, tama√±oTotal);
+    }
 
-        for (int i = 0; i < wordCount; i++)
+    public void GenerarNuevoNivel()
+    {
+        // Limpiar grid anterior
+        foreach (Transform child in gridParent) Destroy(child.gameObject);
+
+        // Generar nuevo grid
+        InicializarGrid();
+        ColocarPalabras();
+        LlenarEspaciosVacios();
+        DibujarGrid();
+    }
+
+    private void InicializarGrid()
+    {
+        for (int x = 0; x < GRID_SIZE; x++)
+            for (int y = 0; y < GRID_SIZE; y++)
+                grid[x, y] = '\0';
+    }
+
+    private void ColocarPalabras()
+    {
+        foreach (string palabra in palabras)
         {
-            if (wordList.Count == 0) break;
-            string word = wordList[Random.Range(0, wordList.Count)];
-            words.Add(word);
-            wordList.Remove(word); // Evita duplicados
-        }
+            bool colocada = false;
+            int intentos = 0;
 
-        Debug.Log("Palabras generadas: " + string.Join(", ", words));
-    }
-
-    // Inicializa la cuadrÌcula vacÌa
-    private void GenerateGrid()
-    {
-        grid = new char[gridSize, gridSize];
-    }
-
-    // Coloca las palabras en la cuadrÌcula
-    private void PlaceWords()
-    {
-        foreach (string word in words)
-        {
-            bool placed = false;
-            while (!placed)
+            while (!colocada && intentos < 100)
             {
-                int x = Random.Range(0, gridSize);
-                int y = Random.Range(0, gridSize);
-                int directionX = Random.Range(-1, 2); // DirecciÛn horizontal (-1, 0, 1)
-                int directionY = Random.Range(-1, 2); // DirecciÛn vertical (-1, 0, 1)
+                int x = Random.Range(0, GRID_SIZE);
+                int y = Random.Range(0, GRID_SIZE);
+                Vector2Int direccion = ObtenerDireccionAleatoriaValida(palabra.Length, x, y);
 
-                if (directionX == 0 && directionY == 0) continue; // Evita direcciones inv·lidas
-
-                if (CanPlaceWord(word, x, y, directionX, directionY))
+                if (direccion != Vector2Int.zero && PuedeColocarPalabra(palabra, x, y, direccion.x, direccion.y))
                 {
-                    PlaceWord(word, x, y, directionX, directionY);
-                    placed = true;
+                    ColocarPalabra(palabra, x, y, direccion.x, direccion.y);
+                    palabrasActuales.Add(palabra);
+                    colocada = true;
                 }
+                intentos++;
             }
         }
     }
 
-    // Verifica si una palabra puede colocarse en una posiciÛn y direcciÛn especÌficas
-    private bool CanPlaceWord(string word, int x, int y, int directionX, int directionY)
+    private Vector2Int ObtenerDireccionAleatoriaValida(int longitudPalabra, int x, int y)
     {
-        for (int i = 0; i < word.Length; i++)
+        List<Vector2Int> direccionesPosibles = new List<Vector2Int>()
         {
-            int newX = x + i * directionX;
-            int newY = y + i * directionY;
+            Vector2Int.right,    // Horizontal ‚Üí
+            Vector2Int.left,     // Horizontal ‚Üê
+            Vector2Int.up,       // Vertical ‚Üë
+            Vector2Int.down,     // Vertical ‚Üì
+            new Vector2Int(1, 1),  // Diagonal ‚Üò
+            new Vector2Int(-1, -1),// Diagonal ‚Üñ
+            new Vector2Int(1, -1), // Diagonal ‚Üó
+            new Vector2Int(-1, 1)  // Diagonal ‚Üô
+        };
 
-            // Verifica lÌmites de la cuadrÌcula
-            if (newX < 0 || newX >= gridSize || newY < 0 || newY >= gridSize)
-                return false;
+        // Filtrar direcciones que no excedan el tama√±o del grid
+        foreach (Vector2Int dir in direccionesPosibles)
+        {
+            int newX = x + (longitudPalabra - 1) * dir.x;
+            int newY = y + (longitudPalabra - 1) * dir.y;
+            if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE)
+                return dir;
+        }
 
-            // Verifica si la celda est· ocupada por otra palabra
-            if (grid[newX, newY] != '\0' && grid[newX, newY] != word[i])
+        return Vector2Int.zero;
+    }
+
+    private bool PuedeColocarPalabra(string palabra, int x, int y, int dirX, int dirY)
+    {
+        for (int i = 0; i < palabra.Length; i++)
+        {
+            int newX = x + i * dirX;
+            int newY = y + i * dirY;
+            if (grid[newX, newY] != '\0' && grid[newX, newY] != palabra[i])
                 return false;
         }
         return true;
     }
 
-    // Coloca la palabra en la cuadrÌcula
-    private void PlaceWord(string word, int x, int y, int directionX, int directionY)
+    private void ColocarPalabra(string palabra, int x, int y, int dirX, int dirY)
     {
-        for (int i = 0; i < word.Length; i++)
+        for (int i = 0; i < palabra.Length; i++)
         {
-            int newX = x + i * directionX;
-            int newY = y + i * directionY;
-
-            grid[newX, newY] = word[i];
+            int newX = x + i * dirX;
+            int newY = y + i * dirY;
+            grid[newX, newY] = palabra[i];
         }
     }
 
-    // Rellena los espacios vacÌos con letras aleatorias
-    private void FillEmptySpaces()
+    private void LlenarEspaciosVacios()
     {
-        for (int x = 0; x < gridSize; x++)
-        {
-            for (int y = 0; y < gridSize; y++)
-            {
+        for (int x = 0; x < GRID_SIZE; x++)
+            for (int y = 0; y < GRID_SIZE; y++)
                 if (grid[x, y] == '\0')
-                {
-                    grid[x, y] = GetRandomLetter();
-                }
-            }
-        }
+                    grid[x, y] = (char)Random.Range('A', 'Z' + 1);
     }
 
-    // Genera una letra aleatoria (A-Z)
-    private char GetRandomLetter()
+    private void DibujarGrid()
     {
-        return (char)Random.Range('A', 'Z' + 1);
+        for (int x = 0; x < GRID_SIZE; x++)
+            for (int y = 0; y < GRID_SIZE; y++)
+                CrearCelda(x, y, grid[x, y].ToString());
     }
 
-    // Muestra la cuadrÌcula en el Canvas utilizando el prefab de casillas
-    private void DisplayGrid()
+    private void CrearCelda(int x, int y, string letra)
     {
-        if (cellPrefab == null || gridParent == null)
-        {
-            Debug.LogError("°Asigna el prefab de la casilla y el objeto padre en el Inspector!");
-            return;
-        }
-
-        GridLayoutGroup gridLayout = gridParent.GetComponent<GridLayoutGroup>();
-        if (gridLayout == null)
-        {
-            Debug.LogError("°El objeto padre debe tener un componente GridLayoutGroup!");
-            return;
-        }
-
-        // Ajusta el tamaÒo de las celdas  
-        float cellSize = 50f; // Aseg˙rate de que el tamaÒo se ajuste a tus necesidades  
-        gridLayout.cellSize = new Vector2(cellSize, cellSize);
-
-        // Genera las casillas en el Canvas  
-        for (int y = 0; y < gridSize; y++)
-        {
-            for (int x = 0; x < gridSize; x++)
-            {
-                GameObject cell = Instantiate(cellPrefab, gridParent);
-                TextMeshProUGUI cellText = cell.GetComponentInChildren<TextMeshProUGUI>();
-                CellData cellData = cell.GetComponent<CellData>(); // Aseg˙rate de que tu prefab tenga este componente  
-
-                if (cellText == null || cellData == null)
-                {
-                    Debug.LogError("°El prefab de la casilla debe tener componentes TextMeshProUGUI y CellData!");
-                    return;
-                }
-
-                // Asigna letras y coordenadas  
-                cellText.text = grid[x, y].ToString();
-                cellData.SetCoordinates(x, y);
-            }
-        }
+        GameObject celda = Instantiate(cellPrefab, gridParent);
+        celda.GetComponent<CellData>().Configurar(x, y, letra);
     }
 }

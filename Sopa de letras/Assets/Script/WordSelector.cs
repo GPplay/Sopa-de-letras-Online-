@@ -11,11 +11,30 @@ public class WordSelector : MonoBehaviour
     public List<CellData> celdasSeleccionadas = new List<CellData>();
     private Vector2Int direccionActual;
 
+    //selecionar
+    private int indiceColorActual = 0;
+    private Color colorSeleccionActual;
+    private List<Color> coloresPalabras = new List<Color>
+    {
+        new Color(1f, 0.5f, 0.5f, 0.5f),   // Rojo claro
+        new Color(0.5f, 1f, 0.5f, 0.5f),   // Verde claro
+        new Color(0.5f, 0.5f, 1f, 0.5f),   // Azul claro
+        new Color(1f, 1f, 0.5f, 0.5f),     // Amarillo
+        new Color(1f, 0.5f, 1f, 0.5f),     // Rosa
+        new Color(0.5f, 1f, 1f, 0.5f),     // Cyan
+        new Color(0.8f, 0.6f, 0.4f, 0.5f), // Marrón claro
+        new Color(0.6f, 0.4f, 0.8f, 0.5f)  // Púrpura
+    };
+
     private void Awake() => Instance = this;
 
     public void IniciarSeleccion(CellData celda)
     {
         LimpiarSeleccionAnterior();
+
+        colorSeleccionActual = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 0.5f);
+
+        celda.highlightImage.color = colorSeleccionActual;
         celdasSeleccionadas.Add(celda);
         direccionActual = Vector2Int.zero;
         ActualizarUI();
@@ -52,16 +71,29 @@ public class WordSelector : MonoBehaviour
             }
         }
 
-        nuevaCelda.highlightImage.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+        nuevaCelda.highlightImage.color = colorSeleccionActual;
         celdasSeleccionadas.Add(nuevaCelda);
         ActualizarUI();
+
     }
 
     public void TerminarSeleccion()
     {
         bool esValida = ValidarPalabra(ObtenerPalabra());
-        if (esValida) foreach (CellData celda in celdasSeleccionadas) celda.MarcarComoCorrecta();
-        else LimpiarSeleccionAnterior();
+        if (esValida)
+        {
+            foreach (CellData celda in celdasSeleccionadas)
+            {
+                // Mantén el mismo color pero hazlo más opaco para indicar que es correcto
+                Color colorActual = celda.highlightImage.color;
+                celda.highlightImage.color = new Color(colorActual.r, colorActual.g, colorActual.b, 0.8f);
+                celda.MarcarComoCorrecta();
+            }
+        }
+        else
+        {
+            LimpiarSeleccionAnterior();
+        }
         celdasSeleccionadas.Clear();
         ActualizarUI();
     }

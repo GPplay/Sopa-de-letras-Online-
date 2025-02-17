@@ -2,27 +2,49 @@
 using TMPro;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System.Linq;
 
 public class SopaDeLetrasGenerator : MonoBehaviour
 {
     public static SopaDeLetrasGenerator Instance;
 
     [Header("Configuración")]
-    public GameObject cellPrefab; // Prefab de la celda
-    public Transform gridParent;  // Contenedor del grid (debe ser cuadrado)
-    public List<string> palabras = new List<string>() {
-    "PAN", "CASA", "FLOR", "LUZ", "MESA", "SOL", "MAR", "CIELO", "TIERRA", "FUEGO",
-    "AGUA", "VIENTO", "ARBOL", "PERRO", "GATO", "LIBRO", "MANO", "PIE", "OJOS", "BOCA",
-    "NARIZ", "COCHE", "CALLE", "PLAZA", "CAMINO", "PUENTE", "BANCO", "PLATO", "VASO", "TENEDOR",
-    "CUCHARA", "LLAVE", "PUERTA", "VENTANA", "TECHO", "SUELO", "PISO", "SILLA", "MESA", "SOFA",
-    "CAMA", "ALMOHADA", "MANTEL", "TOALLA", "JABON", "PELO", "UÑA", "PIEL", "HUESO", "SANGRE",
-    "CARNE", "HUESO", "HIELO", "NIEVE", "LLUVIA", "TRUENO", "RAYO", "NUBE", "ESTRELLA", "LUNA",
-    "PLANETA", "BOSQUE", "RIO", "LAGO", "MONTAÑA", "VALLE", "PLAYA", "ARENA", "PIEDRA", "BARRO",
-    "METAL", "ORO", "PLATA", "BRONCE", "HIERRO", "CARBON", "MADERA", "PAPEL", "TELA", "HILO",
-    "AGUJA", "BOTON", "ZAPATO", "SOMBRERO", "GUANTE", "BUFANDA", "ABRIGO", "FALDA", "PANTALON", "CAMISA",
-    "VESTIDO", "CHAQUETA", "RELOJ", "CADENA", "ANILLO", "PULSERA", "COLLAR", "BOLSO", "MALETA", "MOCHILA"};
+    public GameObject cellPrefab;
+    public Transform gridParent;
 
-    private const int GRID_SIZE = 10; // Tamaño fijo 10x10
+    [Header("Idiomas")]
+    public Idioma idiomaActual = Idioma.Español;
+    public enum Idioma { Español, Inglés }
+
+    [SerializeField]
+    private List<string> palabrasEspanol = new List<string>() {
+        "PAN", "CASA", "FLOR", "LUZ", "MESA", "SOL", "MAR", "CIELO", "TIERRA", "FUEGO",
+        "AGUA", "VIENTO", "ARBOL", "PERRO", "GATO", "LIBRO", "MANO", "PIE", "OJOS", "BOCA",
+        "NARIZ", "COCHE", "CALLE", "PLAZA", "CAMINO", "PUENTE", "BANCO", "PLATO", "VASO", "TENEDOR",
+        "CUCHARA", "LLAVE", "PUERTA", "VENTANA", "TECHO", "SUELO", "PISO", "SILLA", "SOFA",
+        "CAMA", "ALMOHADA", "MANTEL", "TOALLA", "JABON", "PELO", "UÑA", "PIEL", "HUESO", "SANGRE",
+        "CARNE", "HIELO", "NIEVE", "LLUVIA", "TRUENO", "RAYO", "NUBE", "ESTRELLA", "LUNA",
+        "PLANETA", "BOSQUE", "RIO", "LAGO", "MONTAÑA", "VALLE", "PLAYA", "ARENA", "PIEDRA", "BARRO",
+        "METAL", "ORO", "PLATA", "BRONCE", "HIERRO", "CARBON", "MADERA", "PAPEL", "TELA", "HILO",
+        "AGUJA", "BOTON", "ZAPATO", "SOMBRERO", "GUANTE", "BUFANDA", "ABRIGO", "FALDA", "PANTALON", "CAMISA",
+        "VESTIDO", "CHAQUETA", "RELOJ", "CADENA", "ANILLO", "PULSERA", "COLLAR", "BOLSO", "MALETA", "MOCHILA"
+    };
+
+    [SerializeField]
+    private List<string> palabrasIngles = new List<string>() {
+        "HOME", "DOG", "CAT", "BOOK", "HAND", "FOOT", "EYES", "MOUTH", "NOSE", "CAR",
+        "STREET", "BRIDGE", "PLATE", "GLASS", "KEY", "DOOR", "WINDOW", "CHAIR", "TABLE", "BED",
+        "PILLOW", "TOWEL", "SOAP", "HAIR", "SKIN", "BONE", "BLOOD", "MEAT", "ICE", "SNOW",
+        "RAIN", "CLOUD", "STAR", "MOON", "PLANET", "FOREST", "RIVER", "LAKE", "BEACH", "STONE",
+        "METAL", "GOLD", "SILVER", "WOOD", "PAPER", "SHOE", "HAT", "SHIRT", "DRESS", "WATCH",
+        "BAG", "COIN", "FIRE", "WATER", "WIND", "EARTH", "TREE", "ROAD", "BRONZE", "IRON",
+        "CLOTH", "NEEDLE", "BUTTON", "GLASSES", "COMPUTER", "PHONE", "SCREEN", "KEYBOARD", "MOUSE",
+        "CAMERA", "MUSIC", "FILM", "LIGHT", "SOUND", "NIGHT", "DAY", "SUN", "MOUNTAIN", "VALLEY",
+        "GRASS", "FLOWER", "BREAD", "MILK", "SUGAR", "SALT", "COFFEE", "TEA", "FRUIT", "APPLE"
+    };
+
+    [SerializeField] private int cantidadPalabrasParaJuego = 5;
+    private const int GRID_SIZE = 10;
     private char[,] grid = new char[GRID_SIZE, GRID_SIZE];
     public List<string> palabrasActuales = new List<string>();
 
@@ -34,7 +56,31 @@ public class SopaDeLetrasGenerator : MonoBehaviour
         GenerarNuevoNivel();
     }
 
-    // Ajusta el tamaño del contenedor para que sea cuadrado
+    public void CambiarIdioma(int nuevoIdioma)
+    {
+        idiomaActual = (Idioma)nuevoIdioma;
+        GenerarNuevoNivel();
+    }
+
+    private List<string> SeleccionarPalabrasAleatorias()
+    {
+        List<string> palabrasDisponibles = idiomaActual == Idioma.Español ?
+            new List<string>(palabrasEspanol.Where(p => p.Length <= GRID_SIZE)) :
+            new List<string>(palabrasIngles.Where(p => p.Length <= GRID_SIZE));
+
+        List<string> palabrasSeleccionadas = new List<string>();
+        int cantidad = Mathf.Min(cantidadPalabrasParaJuego, palabrasDisponibles.Count);
+
+        for (int i = 0; i < cantidad; i++)
+        {
+            int index = Random.Range(0, palabrasDisponibles.Count);
+            palabrasSeleccionadas.Add(palabrasDisponibles[index]);
+            palabrasDisponibles.RemoveAt(index);
+        }
+
+        return palabrasSeleccionadas;
+    }
+
     private void ConfigurarTamañoGridParent()
     {
         GridLayoutGroup gridLayout = gridParent.GetComponent<GridLayoutGroup>();
@@ -46,26 +92,13 @@ public class SopaDeLetrasGenerator : MonoBehaviour
 
     public void GenerarNuevoNivel()
     {
-        // Limpiar grid anterior
         foreach (Transform child in gridParent) Destroy(child.gameObject);
-
-        // Generar nuevo grid
+        palabrasActuales.Clear();
         InicializarGrid();
-        ColocarPalabras();
-        LlenarEspaciosVacios();
-        DibujarGrid();
-    }
 
-    private void InicializarGrid()
-    {
-        for (int x = 0; x < GRID_SIZE; x++)
-            for (int y = 0; y < GRID_SIZE; y++)
-                grid[x, y] = '\0';
-    }
+        List<string> palabrasParaNivel = SeleccionarPalabrasAleatorias();
 
-    private void ColocarPalabras()
-    {
-        foreach (string palabra in palabras)
+        foreach (string palabra in palabrasParaNivel)
         {
             bool colocada = false;
             int intentos = 0;
@@ -85,32 +118,43 @@ public class SopaDeLetrasGenerator : MonoBehaviour
                 intentos++;
             }
         }
+
+        LlenarEspaciosVacios();
+        DibujarGrid();
+    }
+
+    private void InicializarGrid()
+    {
+        for (int x = 0; x < GRID_SIZE; x++)
+            for (int y = 0; y < GRID_SIZE; y++)
+                grid[x, y] = '\0';
     }
 
     private Vector2Int ObtenerDireccionAleatoriaValida(int longitudPalabra, int x, int y)
     {
-        List<Vector2Int> direccionesPosibles = new List<Vector2Int>()
-        {
-            Vector2Int.right,    // Horizontal →
-            Vector2Int.left,     // Horizontal ←
-            Vector2Int.up,       // Vertical ↑
-            Vector2Int.down,     // Vertical ↓
-            new Vector2Int(1, 1),  // Diagonal ↘
-            new Vector2Int(-1, -1),// Diagonal ↖
-            new Vector2Int(1, -1), // Diagonal ↗
-            new Vector2Int(-1, 1)  // Diagonal ↙
+        List<Vector2Int> direccionesValidas = new List<Vector2Int>();
+
+        // Lista original de direcciones
+        List<Vector2Int> direccionesPosibles = new List<Vector2Int>() {
+        Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down,
+        new Vector2Int(1, 1), new Vector2Int(-1, -1), new Vector2Int(1, -1), new Vector2Int(-1, 1)
         };
 
-        // Filtrar direcciones que no excedan el tamaño del grid
+        // Filtrar direcciones válidas
         foreach (Vector2Int dir in direccionesPosibles)
         {
             int newX = x + (longitudPalabra - 1) * dir.x;
             int newY = y + (longitudPalabra - 1) * dir.y;
             if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE)
-                return dir;
+            {
+                direccionesValidas.Add(dir);
+            }
         }
 
-        return Vector2Int.zero;
+        // Elegir aleatoriamente entre las válidas
+        return (direccionesValidas.Count > 0)
+            ? direccionesValidas[Random.Range(0, direccionesValidas.Count)]
+            : Vector2Int.zero;
     }
 
     private bool PuedeColocarPalabra(string palabra, int x, int y, int dirX, int dirY)

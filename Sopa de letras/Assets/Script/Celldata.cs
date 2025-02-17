@@ -45,14 +45,14 @@ public class CellData : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoint
 
     public void MarcarComoCorrecta()
     {
-        highlightImage.color = Color.green;
-        letraText.color = Color.white;
+        Color colorActual = highlightImage.color;
+        highlightImage.color = new Color(colorActual.r, colorActual.g, colorActual.b, 0.7f);
     }
 
     public void ResetearSeleccion()
     {
         highlightImage.color = Color.clear;
-        letraText.color = Color.black;
+        letraText.color = Color.red;
     }
 
     public void Configurar(int x, int y, string letra)

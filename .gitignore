@@ -1,5 +1,7 @@
 # Ignorar carpeta Assets específica (ruta relativa)
 /Sopa de letras/Assets/
+Library/
+
 
 # El resto de tu archivo .gitignore original
 # /[Aa]ssets/AssetStoreTools*

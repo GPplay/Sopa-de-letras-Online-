@@ -50,4 +50,4 @@ crashlytics-build.properties
 
 # Ignore specific folder
 /[Aa]ssets/GUIPackCartoon/
-/[Aa]ssets/GUIPackCartoon.meta
+/[Aa]ssets/GUIPackCartoon.metaSopa de letras/Logs/*.log

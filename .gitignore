@@ -1,5 +1,5 @@
 # Ignorar carpeta Assets específica (ruta relativa)
-
+.log
 
 # El resto de tu archivo .gitignore original
 # /[Aa]ssets/AssetStoreTools*

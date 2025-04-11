@@ -22,6 +22,9 @@ ExportedObj/
 *.pidb
 *.booproj
 *.svd
+*.meta
+*.asset
+*.mixer
 *.pdb
 *.mdb
 *.opendb

@@ -1,3 +1,0 @@
-D:\archivos de programa\creacion de juegos\Sopa-de-letras-Online-\Sopa de letras\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\CMakeLists.txt
-D:\archivos de programa\creacion de juegos\Sopa-de-letras-Online-\Sopa de letras\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\FramePacing\CMakeLists.txt
-D:\archivos de programa\creacion de juegos\Sopa-de-letras-Online-\Sopa de letras\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\src\main\cpp\GameActivity\CMakeLists.txt
